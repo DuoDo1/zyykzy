@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="情侣控制欲与占有欲测评，生成主导倾向、比例分析与相处建议。"
+    />
+    <title>情侣控制欲 vs 占有欲测评</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="intro" id="intro">
+        <div class="intro-copy">
+          <p class="eyebrow">私密关系边界测评</p>
+          <h1>你更像控制欲，还是占有欲？</h1>
+          <p class="lead">
+            50 个恋爱场景，区分“想让 TA 听我的”和“害怕 TA 不属于我”。结果会给出主导倾向、两项比例、边界健康度和具体改善建议。
+          </p>
+          <div class="intro-actions">
+            <button class="primary-action" id="startBtn" type="button">开始测评</button>
+            <button class="ghost-action" id="jumpResultBtn" type="button">查看计分方式</button>
+          </div>
+        </div>
+        <div class="signal-panel" aria-label="测评维度预览">
+          <div>
+            <span>Control</span>
+            <strong>控制欲</strong>
+            <p>规则、干预、要求服从</p>
+          </div>
+          <div>
+            <span>Possess</span>
+            <strong>占有欲</strong>
+            <p>吃醋、排他、害怕失去</p>
+          </div>
+          <div>
+            <span>Boundary</span>
+            <strong>健康边界</strong>
+            <p>信任、尊重、共同协商</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="quiz hidden" id="quiz" aria-live="polite">
+        <div class="topbar">
+          <button class="icon-button" id="backHomeBtn" type="button" aria-label="返回首页">←</button>
+          <div class="progress-wrap" aria-label="答题进度">
+            <div class="progress-meta">
+              <span id="questionCounter">第 1 / 50 题</span>
+              <span id="progressPercent">2%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <article class="question-card">
+          <p class="question-tag" id="questionTag">社交边界</p>
+          <h2 id="questionText"></h2>
+          <p class="question-hint" id="questionHint"></p>
+          <div class="options" id="options"></div>
+        </article>
+
+        <div class="nav-row">
+          <button class="ghost-action" id="prevBtn" type="button">上一题</button>
+          <button class="primary-action" id="nextBtn" type="button">下一题</button>
+        </div>
+      </section>
+
+      <section class="result hidden" id="result">
+        <div class="result-header">
+          <p class="eyebrow">你的测评结果</p>
+          <h2 id="resultTitle"></h2>
+          <p id="resultSummary"></p>
+        </div>
+
+        <div class="score-grid">
+          <div class="score-item">
+            <span>控制欲</span>
+            <strong id="controlScore">0%</strong>
+            <div class="score-track"><div id="controlBar"></div></div>
+          </div>
+          <div class="score-item">
+            <span>占有欲</span>
+            <strong id="possessiveScore">0%</strong>
+            <div class="score-track"><div id="possessiveBar"></div></div>
+          </div>
+          <div class="score-item">
+            <span>健康边界</span>
+            <strong id="healthyScore">0%</strong>
+            <div class="score-track"><div id="healthyBar"></div></div>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <article>
+            <h3>结果解读</h3>
+            <p id="analysisText"></p>
+          </article>
+          <article>
+            <h3>相处建议</h3>
+            <p id="adviceText"></p>
+          </article>
+        </div>
+
+        <div class="result-actions">
+          <button class="primary-action" id="restartBtn" type="button">重新测评</button>
+          <button class="ghost-action" id="copyBtn" type="button">复制结果摘要</button>
+        </div>
+      </section>
+
+      <section class="method hidden" id="method">
+        <div class="method-card">
+          <button class="icon-button close-button" id="closeMethodBtn" type="button" aria-label="关闭">×</button>
+          <p class="eyebrow">最终测评方案</p>
+          <h2>采用“主导倾向 + 综合比例”</h2>
+          <p>
+            控制欲侧重“我要掌控你的行为与决定”，占有欲侧重“我害怕你不再只属于我”。现实关系里两者常常交织，所以本测评分别计算控制、占有、健康边界三类分数，再给出主导类型和改善建议。
+          </p>
+          <ul>
+            <li>单选题只记录一个最贴近反应的倾向。</li>
+            <li>多选题允许选择多个真实想法，用来识别高压叠加状态。</li>
+            <li>“混合型”不是模糊结论，而是表示控制与占有得分都偏高。</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
