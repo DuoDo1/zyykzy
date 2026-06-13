@@ -618,7 +618,7 @@ function percentages(score) {
 }
 
 function intensity(value) {
-  if (value >= 34) {
+  if (value >= 45) {
     return "high";
   }
   if (value >= 18) {
@@ -652,8 +652,8 @@ function hotspotCopy(dimensions) {
 }
 
 function resultCopy(score, percent) {
-  const controlLevel = intensity(score.control);
-  const possessiveLevel = intensity(score.possessive);
+  const controlLevel = intensity(percent.control);
+  const possessiveLevel = intensity(percent.possessive);
   const key = `${controlLevel}-${possessiveLevel}`;
 
   const resultMap = {
@@ -721,13 +721,6 @@ function resultCopy(score, percent) {
       advice: "先从一个最容易执行的边界开始：不偷看、不威胁、不用冷战换服从。把“你必须”改成“我会担心，因为我需要”。如果冲突频繁，建议做伴侣沟通或心理咨询。",
     },
   };
-
-  if (percent.healthy >= 45 && score.healthy > score.control && score.healthy > score.possessive) {
-    return {
-      ...resultMap["low-low"],
-      title: "安全边界型",
-    };
-  }
 
   return resultMap[key];
 }
