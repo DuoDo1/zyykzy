@@ -590,6 +590,24 @@ function totals() {
   );
 }
 
+function dimensionTotals() {
+  return answers.reduce((sum, selected, questionIndex) => {
+    const tag = QUESTIONS[questionIndex].tag;
+    if (!sum[tag]) {
+      sum[tag] = { control: 0, possessive: 0, healthy: 0 };
+    }
+
+    selected.forEach((optionIndex) => {
+      const score = QUESTIONS[questionIndex].options[optionIndex][1];
+      sum[tag].control += score.control || 0;
+      sum[tag].possessive += score.possessive || 0;
+      sum[tag].healthy += score.healthy || 0;
+    });
+
+    return sum;
+  }, {});
+}
+
 function percentages(score) {
   const total = Math.max(score.control + score.possessive + score.healthy, 1);
   return {
@@ -599,53 +617,131 @@ function percentages(score) {
   };
 }
 
+function intensity(value) {
+  if (value >= 34) {
+    return "high";
+  }
+  if (value >= 18) {
+    return "medium";
+  }
+  return "low";
+}
+
+function hotspotCopy(dimensions) {
+  const ranked = Object.entries(dimensions)
+    .map(([tag, score]) => ({
+      tag,
+      pressure: score.control + score.possessive,
+      control: score.control,
+      possessive: score.possessive,
+    }))
+    .filter((item) => item.pressure > 0)
+    .sort((a, b) => b.pressure - a.pressure)
+    .slice(0, 2);
+
+  if (!ranked.length) {
+    return "你的敏感场景不明显，整体更偏向稳定、信任和尊重边界。";
+  }
+
+  return ranked
+    .map((item) => {
+      const tendency = item.control > item.possessive ? "控制感" : item.possessive > item.control ? "占有感" : "控制与占有";
+      return `${item.tag}：${tendency}更容易被触发`;
+    })
+    .join("；");
+}
+
 function resultCopy(score, percent) {
-  const intense = score.control >= 34 && score.possessive >= 34;
-  const diff = Math.abs(score.control - score.possessive);
-  const healthyLead = percent.healthy >= 45;
+  const controlLevel = intensity(score.control);
+  const possessiveLevel = intensity(score.possessive);
+  const key = `${controlLevel}-${possessiveLevel}`;
 
-  if (healthyLead && score.healthy > score.control && score.healthy > score.possessive) {
-    return {
+  const resultMap = {
+    "low-low": {
       title: "安全边界型",
+      profile: "亲密但不黏人，信任感和独立性都比较好。",
       summary: "你在亲密关系里更能保持信任、尊重和独立感。你不是没有情绪，而是更倾向于用沟通处理不安。",
-      analysis: "你的健康边界得分最高，说明你能把“爱一个人”和“拥有一个人”区分开，也能允许伴侣保留自己的空间、朋友、选择和隐私。",
+      analysis: "你的健康边界得分更突出，说明你能把“爱一个人”和“拥有一个人”区分开，也能允许伴侣保留自己的空间、朋友、选择和隐私。",
       advice: "继续保留这种稳定感。遇到吃醋或担心时，优先表达感受和需求，而不是把情绪变成规则。",
-    };
-  }
-
-  if (intense || (diff <= 8 && score.control + score.possessive >= 60)) {
-    return {
-      title: "高控制 + 高占有混合型",
-      summary: "你既容易想让伴侣按你的方式行动，也容易害怕 TA 被别人吸引或离开。这类模式会让关系消耗很大。",
-      analysis: "混合型的核心不是“很爱”，而是安全感高度依赖外部确认。你可能同时需要报备、服从、删除联系人、秒回、公开偏爱等多种保证。",
-      advice: "先从一个最容易执行的边界开始：不偷看、不威胁、不用冷战换服从。把“你必须”改成“我会担心，因为我需要”。如果冲突频繁，建议做伴侣沟通或心理咨询。",
-    };
-  }
-
-  if (score.control > score.possessive) {
-    return {
-      title: "控制欲主导型",
+    },
+    "medium-low": {
+      title: "轻度规划型",
+      profile: "你偶尔会想安排对方，但多数时候还能尊重 TA 的自主选择。",
+      summary: "你的控制感略高于占有感，更容易通过建议、规划和提醒来获得确定性。",
+      analysis: "这类模式通常不会一开始就显得强势，但当伴侣没有按你的期待行动时，你可能会忍不住纠正、催促或替 TA 做决定。",
+      advice: "给建议前先问一句“你需要我给意见吗”。只要不是共同风险，就把最终选择权留给 TA。",
+    },
+    "high-low": {
+      title: "高控制规划型",
+      profile: "你容易替伴侣做决定，希望关系按你的节奏和标准运行。",
       summary: "你的不安更容易表现为规则、干预、指导和纠正。你在意的是事情是否按你的标准运行。",
       analysis: "控制欲的底层需求通常是确定性：知道 TA 在哪里、做什么、该怎么选，关系才显得可控。但伴侣可能会感到被管理、被否定、没有自主权。",
       advice: "练习“建议到此为止”：表达观点后，把决定权还给 TA。每次想立规矩前，先问自己这是不是共同边界，还是我单方面的焦虑。",
+    },
+    "low-medium": {
+      title: "轻度吃醋型",
+      profile: "你会有不安和吃醋，但通常还能自我调节，不太会强行限制对方。",
+      summary: "你的占有感略高于控制感，更在意伴侣是否把你放在特殊位置。",
+      analysis: "适度吃醋并不罕见，它往往是在提醒你需要更多确认。但如果把所有不安都解释成“TA 不爱我”，情绪会被放大。",
+      advice: "把猜测换成具体表达，比如“我有点吃醋，想被你抱一下”，比追问和试探更有效。",
+    },
+    "low-high": {
+      title: "高占有依恋型",
+      profile: "你很需要被偏爱，容易害怕伴侣被别人吸引或离开。",
+      summary: "你的不安更容易表现为吃醋、排他、反复确认爱意和害怕失去。你在意的是 TA 是否只把你放在最特殊的位置。",
+      analysis: "占有欲的底层需求通常是被选择和被偏爱。适度吃醋很常见，但如果发展成限制社交、反复查证、情绪勒索，关系会变得窒息。",
+      advice: "把注意力从“TA 会不会离开”拉回“我如何让自己稳定”。保留自己的社交、爱好和成长，会比不断确认更能带来安全感。",
+    },
+    "medium-medium": {
+      title: "敏感磨合型",
+      profile: "控制和占有都有一点，常见于缺安全感但还没失控的状态。",
+      summary: "你既会想要更多确定性，也会在意自己是不是伴侣的第一优先级。",
+      analysis: "这类关系模式还有很大调整空间。真正的问题通常不是某一次吃醋或报备，而是你是否会把不安变成持续性的要求。",
+      advice: "和伴侣约定少量、双方都认可的边界。边界越清楚，临时查证、冷战和试探就越少。",
+    },
+    "high-medium": {
+      title: "规则主导型",
+      profile: "你会通过报备、边界规定、行为要求来稳定关系。",
+      summary: "你更习惯用规则处理关系里的不确定，同时也会在某些场景里产生明显吃醋。",
+      analysis: "规则本身不一定坏，关键在于它是不是双方协商出来的。如果规则主要由你制定，伴侣很容易觉得是在接受管理。",
+      advice: "把单方面规定改成共同协议。每条规则都问三个问题：双方都需要吗、能执行吗、会不会侵犯隐私和自由。",
+    },
+    "medium-high": {
+      title: "情绪确认型",
+      profile: "你会频繁确认“你还爱不爱我”“我是不是第一位”。",
+      summary: "相比掌控伴侣的生活，你更害怕自己不是 TA 的唯一优先级。",
+      analysis: "你可能很敏锐地捕捉伴侣语气、回复速度和社交互动，并把它们解读成爱意变化。伴侣可能会觉得需要不断证明爱你。",
+      advice: "把“你是不是不爱我了”换成“我现在有点不安，想要一句确认”。需求越具体，对方越容易回应。",
+    },
+    "high-high": {
+      title: "高压混合型",
+      profile: "你既想掌控，又想独占，容易让伴侣感到压力很大。",
+      summary: "你既容易想让伴侣按你的方式行动，也容易害怕 TA 被别人吸引或离开。这类模式会让关系消耗很大。",
+      analysis: "混合型的核心不是“很爱”，而是安全感高度依赖外部确认。你可能同时需要报备、服从、删除联系人、秒回、公开偏爱等多种保证。",
+      advice: "先从一个最容易执行的边界开始：不偷看、不威胁、不用冷战换服从。把“你必须”改成“我会担心，因为我需要”。如果冲突频繁，建议做伴侣沟通或心理咨询。",
+    },
+  };
+
+  if (percent.healthy >= 45 && score.healthy > score.control && score.healthy > score.possessive) {
+    return {
+      ...resultMap["low-low"],
+      title: "安全边界型",
     };
   }
 
-  return {
-    title: "占有欲主导型",
-    summary: "你的不安更容易表现为吃醋、排他、反复确认爱意和害怕失去。你在意的是 TA 是否只把你放在最特殊的位置。",
-    analysis: "占有欲的底层需求通常是被选择和被偏爱。适度吃醋很常见，但如果发展成限制社交、反复查证、情绪勒索，关系会变得窒息。",
-    advice: "把注意力从“TA 会不会离开”拉回“我如何让自己稳定”。保留自己的社交、爱好和成长，会比不断确认更能带来安全感。",
-  };
+  return resultMap[key];
 }
 
 function renderResult() {
   const score = totals();
   const percent = percentages(score);
+  const dimensions = dimensionTotals();
   const copy = resultCopy(score, percent);
 
   document.getElementById("resultTitle").textContent = copy.title;
   document.getElementById("resultSummary").textContent = copy.summary;
+  document.getElementById("profileText").textContent = copy.profile;
+  document.getElementById("hotspotText").textContent = hotspotCopy(dimensions);
   document.getElementById("analysisText").textContent = copy.analysis;
   document.getElementById("adviceText").textContent = copy.advice;
 

@@ -11,7 +11,7 @@
 
 ## 加锁方式
 
-访问页面由 `_worker.js` 保护。未登录用户会进入 `/login.html`，提交正确口令后获得 7 天有效的 HttpOnly 会话 Cookie。
+访问页面由 `_worker.js` 保护。未登录用户会进入 `/login`，提交正确口令后获得 7 天有效的 HttpOnly 会话 Cookie。
 
 这里使用 `_worker.js`，是为了兼容 Cloudflare Pages 的后台拖拽上传。拖拽上传不支持 `/functions` 目录。
 
